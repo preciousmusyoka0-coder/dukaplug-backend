@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DukaPlug | Food, Groceries & Shopping Delivery</title>
+  <style>
+    
+:root {
+  --yellow: #F5C928;
+  --green: #198754;
+  --white: #FFFFFF;
+  --dark: #263238;
+  --muted: #666666;
+  --background: #FFFDF5;
+  --border: #EEEEEE;
+}
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; color: var(--dark); background: var(--background); }
+    header { background: var(--white); padding: 14px 6%; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #eeeeee; position: sticky; top: 0; z-index: 5; }
+    header img { width: 105px; max-width: 25%; height: auto; object-fit: contain; }
+    .brand { font-size: 23px; font-weight: bold; color: var(--green); text-decoration: none; white-space: nowrap; }
+    .brand span { color: var(--yellow); }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .cart-count { background: var(--yellow); padding: 10px 13px; border-radius: 20px; font-weight: bold; white-space: nowrap; }
+    .hero { background: var(--yellow); padding: 42px 6%; text-align: center; }
+    .hero h1 { font-size: clamp(28px, 5vw, 44px); margin: 0 0 12px; }
+    .hero p { margin: 0 0 24px; font-size: 17px; }
+    .search { width: min(100%, 550px); padding: 15px; border: none; border-radius: 8px; font-size: 16px; }
+    main { padding: 30px 6%; max-width: 1400px; margin: auto; }
+    .section-title { margin: 0 0 18px; }
+    .categories { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+    .category { width: auto; background: var(--white); color: var(--dark); border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-weight: bold; }
+    .category.active, .category:hover { background: var(--yellow); color: var(--dark); }
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 16px; }
+    .product { background: var(--white); border: 1px solid #eeeeee; border-radius: 12px; padding: 13px; box-shadow: 0 2px 8px #0000000d; min-width: 0; }
+    .product-image { background: #fff5cc; min-height: 105px; border-radius: 8px; display: grid; place-items: center; font-size: 46px; }
+    .product h3 { font-size: 15px; line-height: 1.35; margin: 12px 0 6px; }
+    .product p { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+    .price { color: var(--green); font-weight: bold; font-size: 18px; margin-bottom: 11px; }
+    button { padding: 11px; border: none; border-radius: 7px; background: var(--green); color: var(--white); font-weight: bold; cursor: pointer; }
+    button:hover { background: #146c43; }
+    .product button { width: 100%; }
+    .secondary { background: #333; }
+    .secondary:hover { background: #111; }
+    .notice { margin-top: 24px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    footer { background: #222; color: var(--white); text-align: center; padding: 24px; margin-top: 35px; }
+    .panel { display: none; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin: 20px 0 30px; }
+    .panel.open { display: block; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .panel-head h2 { margin: 0 0 12px; }
+    .cart-line { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .cart-line small { display: block; color: var(--muted); margin-top: 4px; }
+    .quantity-controls { display: flex; align-items: center; gap: 8px; }
+    .quantity-controls button, .remove-button { width: auto; padding: 6px 10px; }
+    .remove-button { background: #b02a37; }
+    .cart-total { font-size: 19px; font-weight: bold; margin: 16px 0; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 15px; }
+    .admin-row { display: grid; grid-template-columns: 1fr 100px; gap: 8px; align-items: center; border: 1px solid var(--border); padding: 9px; border-radius: 8px; }
+    .admin-row label { font-size: 13px; line-height: 1.3; }
+    .admin-row input { width: 100%; min-width: 0; padding: 9px; border: 1px solid #ccc; border-radius: 6px; }
+    .admin-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .admin-tools button { width: auto; }
+    .empty { color: var(--muted); padding: 12px 0; }
+    .pill { display: inline-block; background: #e8f5ee; color: var(--green); border-radius: 20px; padding: 5px 9px; font-size: 12px; font-weight: bold; }
+    @media (max-width: 560px) {
+      header { padding: 12px 4%; gap: 8px; }
+      header img { width: 70px; }
+      .brand { font-size: 19px; }
+      .cart-count { padding: 9px 10px; font-size: 13px; }
+      main { padding: 24px 4%; }
+      .products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+      .product { padding: 10px; }
+      .cart-line { grid-template-columns: 1fr auto; }
+      .cart-line .line-price { grid-column: 1 / -1; }
+    }
+
+    /* DukaPlug storefront refresh */
+    :root { --yellow:#F5C928; --green:#198754; --white:#fff; --dark:#18221d; --muted:#66736b; --background:#f7f8f5; --border:#e5e9e3; }
+    html { scroll-behavior:smooth; scroll-padding-top:100px; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background:var(--background); color:var(--dark); }
+    header { padding:13px max(4%, calc((100% - 1240px)/2)); gap:18px; box-shadow:0 2px 12px #15251b0b; }
+    .brand-wrap { display:flex; align-items:center; gap:10px; text-decoration:none; min-width:max-content; }
+    .brand-mark { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; background:var(--yellow); color:#173b28; font-weight:1000; font-size:21px; box-shadow:inset 0 -3px 0 #0000000c; }
+    .brand { font-size:25px; letter-spacing:-1px; color:#173b28; }
+    .brand span { color:var(--green); }
+    header > img { display:none; }
+    .delivery-location { font-size:12px; color:var(--muted); line-height:1.4; min-width:130px; }
+    .delivery-location strong { display:block; font-size:14px; color:var(--dark); }
+    .header-actions { margin-left:auto; gap:10px; }
+    .header-actions button { border-radius:999px; padding:11px 16px; }
+    #profile-shortcut { background:#eef4ed; color:#21442e; }
+    .hero { background:linear-gradient(110deg,#fff1a9 0%,#f5d33b 52%,#e8bb19 100%); text-align:left; padding:clamp(35px,6vw,76px) max(4%, calc((100% - 1240px)/2)); position:relative; overflow:hidden; }
+    .hero::after { content:'🥡'; position:absolute; right:11%; top:50%; transform:translateY(-50%) rotate(-10deg); font-size:clamp(80px,13vw,170px); opacity:.18; filter:drop-shadow(0 10px 8px #74580024); }
+    .hero-copy { position:relative; z-index:1; max-width:650px; }
+    .eyebrow { display:inline-flex; background:#173b28; color:white; border-radius:999px; padding:7px 12px; font-size:11px; letter-spacing:1.3px; font-weight:900; margin-bottom:17px; }
+    .hero h1 { font-size:clamp(36px,5.5vw,66px); line-height:1.02; letter-spacing:-2.6px; margin:0 0 15px; max-width:650px; }
+    .hero p { color:#35452e; font-size:clamp(15px,2vw,18px); line-height:1.6; max-width:500px; margin:0 0 22px; }
+    .hero-points { display:flex; flex-wrap:wrap; gap:9px 18px; font-size:12px; font-weight:700; margin:0 0 25px; }
+    .hero-points span::before { content:'✓'; color:#146c43; font-weight:1000; margin-right:6px; }
+    .search { width:min(100%,580px); padding:16px 18px; border:1px solid #e4e6dc; border-radius:13px; box-shadow:0 6px 20px #263b2110; font-size:15px; }
+    main { max-width:1320px; padding:34px 4% 80px; }
+    .section-title { font-size:clamp(21px,3vw,28px); letter-spacing:-.7px; margin:0 0 18px; }
+    .section-subtitle { color:var(--muted); margin:-9px 0 20px; font-size:14px; }
+    .quick-categories { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:0 0 36px; }
+    .quick-category { border:1px solid var(--border); background:white; border-radius:18px; padding:20px; text-align:left; color:var(--dark); min-height:130px; position:relative; overflow:hidden; transition:transform .18s,box-shadow .18s; }
+    .quick-category:hover { transform:translateY(-3px); box-shadow:0 10px 25px #173b2810; background:#fff; }
+    .quick-category strong { display:block; font-size:19px; margin:10px 0 4px; }
+    .quick-category small { color:var(--muted); font-size:12px; }
+    .quick-category .category-art { float:right; font-size:43px; line-height:1; }
+    .quick-category.food { background:#fff7dc; }
+    .quick-category.groceries { background:#eef8e9; }
+    .quick-category.shopping { background:#f1f3ff; }
+    .categories { gap:9px; margin-bottom:24px; }
+    .category { border-radius:999px; padding:10px 15px; font-size:13px; background:#fff; }
+    .category.active,.category:hover { background:var(--green); color:white; border-color:var(--green); }
+    .products { grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:17px; }
+    .product { border:1px solid #e8ece6; border-radius:17px; padding:12px; box-shadow:0 4px 16px #132c1a08; transition:transform .18s,box-shadow .18s; }
+    .product:hover { transform:translateY(-3px); box-shadow:0 10px 25px #132c1a12; }
+    .product-image { background:#f1f4ed; height:170px; min-height:170px; border-radius:12px; overflow:hidden; display:grid; place-items:center; font-size:48px; }
+    .product-image img { width:100%; height:100%; object-fit:cover; display:block; }
+    .product h3 { font-size:15px; margin:13px 2px 5px; min-height:40px; }
+    .product p { margin:0 2px 10px; }
+    .price { font-size:18px; margin:0 2px 12px; }
+    .product button { border-radius:10px; padding:12px; }
+    button { transition:filter .15s,transform .15s; }
+    button:active { transform:scale(.98); }
+    .promo-strip { display:flex; align-items:center; justify-content:space-between; gap:20px; background:#183c29; color:white; padding:23px 25px; border-radius:18px; margin:0 0 38px; }
+    .promo-strip strong { display:block; font-size:20px; margin-bottom:5px; }
+    .promo-strip p { color:#d8e6db; margin:0; font-size:13px; }
+    .promo-code { background:var(--yellow); color:#183c29; padding:12px 16px; border-radius:10px; font-weight:900; white-space:nowrap; }
+    .store-trust { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:36px 0; }
+    .trust-item { padding:18px; border:1px solid var(--border); background:#fff; border-radius:14px; }
+    .trust-item strong { display:block; margin:7px 0 4px; }
+    .trust-item p { margin:0; font-size:12px; color:var(--muted); line-height:1.5; }
+    .panel { border-radius:17px; padding:22px; box-shadow:0 4px 16px #132c1a08; }
+    .panel-head h2 { font-size:22px; }
+    .admin-tools button { width:auto; }
+    .empty { color:var(--muted); padding:18px 0; }
+    .profile-form { display:grid; gap:12px; max-width:560px; margin-top:18px; }
+    .profile-form label { display:grid; gap:6px; font-size:13px; font-weight:700; }
+    .profile-form input { width:100%; padding:13px; border:1px solid var(--border); border-radius:10px; font:inherit; }
+    .bottom-nav { display:none; }
+    footer { background:#142c1e; text-align:left; padding:35px max(4%, calc((100% - 1240px)/2)); margin-top:25px; }
+    footer p { margin:0; color:#e4ece6; }
+    @media(max-width:700px) {
+      header { padding:10px 4%; gap:9px; }
+      .delivery-location { display:none; }
+      .brand-mark { width:36px; height:36px; border-radius:11px; font-size:18px; }
+      .brand { font-size:21px; }
+      .header-actions { gap:6px; }
+      .header-actions button { padding:10px 12px; font-size:12px; }
+      #profile-shortcut { display:none; }
+      .hero { padding:38px 5% 34px; }
+      .hero::after { right:-15px; top:28%; opacity:.13; }
+      .hero h1 { letter-spacing:-1.5px; max-width:430px; }
+      .hero p { max-width:390px; }
+      main { padding:26px 4% 95px; }
+      .quick-categories { gap:9px; }
+      .quick-category { padding:13px; min-height:118px; border-radius:14px; }
+      .quick-category .category-art { font-size:30px; }
+      .quick-category strong { font-size:15px; }
+      .quick-category small { font-size:10px; }
+      .products { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .product { padding:9px; border-radius:13px; }
+      .product-image { height:130px; min-height:130px; }
+      .product h3 { font-size:13px; min-height:35px; }
+      .price { font-size:16px; }
+      .product button { font-size:12px; padding:10px 7px; }
+      .promo-strip { align-items:flex-start; flex-direction:column; gap:13px; padding:20px; }
+      .promo-code { padding:10px 13px; }
+      .store-trust { grid-template-columns:1fr; }
+      .cart-line { grid-template-columns:1fr auto; }
+      .cart-line .line-price { grid-column:1/-1; }
+      .bottom-nav { position:fixed; bottom:0; left:0; right:0; z-index:20; display:grid; grid-template-columns:repeat(5,1fr); background:#fff; border-top:1px solid #e4e8e2; padding:8px 4px calc(8px + env(safe-area-inset-bottom)); box-shadow:0 -5px 20px #172b1b0d; }
+      .bottom-nav button { background:transparent; color:#657168; border-radius:10px; padding:7px 2px; font-size:10px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+      .bottom-nav button span { font-size:19px; line-height:1; }
+      .bottom-nav button.active { color:var(--green); background:#edf6ef; }
+      footer { padding:26px 5% 90px; }
+    }
+
+<style>
+  .logo {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+</style>
+
+</head>
+<body>
+  <header id="home">
+    
+<a class="brand-wrap" href="#home" aria-label="DukaPlug home">
+ <img src="/images/dukaplug%20logo.jpg" alt="DukaPlug Logo" class="logo" onerror="this.style.display='none'">
+  <span class="brand">Duka<span>Plug</span></span>
+</a>
+
+<div class="delivery-location">
+  DELIVERING TO
+  <strong>📍 seku / kwa vonza</strong>
+</div>
+
+<div class="header-actions">
+  <button id="profile-shortcut" type="button">👤 My Profile</button>
+  <button class="cart-count" id="toggle-cart" type="button">
+    🛒 My Cart <span id="cart-count">0</span>
+  </button>
+</div>
+</header>
+
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">PAY. PLUG. POA.</span>
+      <h1>From cart to your door, fast.</h1>
+      <p>Food cravings, fresh groceries and everyday essentials — all in one place, made for your day.</p>
+      <div class="hero-points"><span>Easy shopping</span><span>Clear prices</span><span>M-Pesa-ready design</span></div>
+      <input class="search" id="search" type="search" placeholder="Search food, groceries and essentials..." aria-label="Search products">
+    </div>
+  </section>
+
+  <main>
+    <h2 class="section-title">Pick your plug</h2>
+    <p class="section-subtitle">What are we getting for you today?</p>
+    <section class="quick-categories" aria-label="Shop departments">
+      <button class="quick-category food" type="button" data-department="Food"><span class="category-art">🍔</span><strong>Food</strong><small>Meals, snacks & drinks</small></button>
+      <button class="quick-category groceries" type="button" data-department="Groceries"><span class="category-art">🥑</span><strong>Groceries</strong><small>Fresh picks & pantry items</small></button>
+      <button class="quick-category shopping" type="button" data-department="Shopping"><span class="category-art">🛍️</span><strong>Shopping</strong><small>Everyday essentials</small></button>
+    </section>
+    <section class="promo-strip"><div><strong>Good things, just a few clicks away.</strong><p>Browse the catalogue and build your campus essentials cart.</p></div><span class="promo-code">DUKAPLUG · POA!</span></section>
+    <h2 class="section-title">Shop by category</h2>
+    <section class="categories" id="categories"></section>
+
+    <section class="panel" id="cart-panel" aria-live="polite">
+      <div class="panel-head">
+        <h2>Your cart</h2>
+        <button class="secondary" id="close-cart" type="button">Close</button>
+      </div>
+      <div id="cart-items"></div>
+      
+<div class="cart-total" id="cart-total">Subtotal: KSh 0</div>
+<p class="notice">Delivery fee: KSh 50. Your final total will be confirmed at checkout.</p>
+<button id="checkout" type="button">Proceed to Checkout</button>
+<p id="checkout-message" class="notice" role="status"></p>
+
+<div id="checkout-options" class="notice" style="display: none; margin-top: 16px;">
+  <h3>Choose Your Payment Method</h3>
+
+  <label style="display: block; margin: 12px 0;">
+    <input type="radio" name="payment-method" value="mpesa" checked>
+    M-Pesa
+  </label>
+
+  <div id="mpesa-instructions" style="margin: 12px 0;">
+    <p>Send your payment to this M-Pesa number:</p>
+    <p><strong>0769043200</strong></p>
+    <button type="button" id="copy-mpesa-number" class="secondary">Copy M-Pesa Number</button>
+  </div>
+
+  <label style="display: block; margin: 12px 0;">
+    <input type="radio" name="payment-method" value="cash">
+    Cash on Delivery
+  </label>
+
+  <p id="payment-message" class="notice" role="status"></p>
+  <button type="button" id="confirm-dukaplug-order">Confirm Order</button>
+</div>
+
+
+   </div>
+</section>
+
+<section class="panel" id="orders-panel" aria-live="polite">
+      <div class="panel-head"><h2>My Orders</h2><button class="secondary" id="close-orders" type="button">Close</button></div>
+      <p class="empty">my orders/p>
+    </section>
+
+    <section class="panel" id="profile-panel" aria-live="polite">
+      <div class="panel-head"><h2>My Profile</h2><button class="secondary" id="close-profile" type="button">Close</button></div>
+      <p class="notice">my profile</p>
+      <form class="profile-form" id="profile-form">
+        <label>Full name<input id="profile-name" name="name" autocomplete="name" placeholder="Your name"></label>
+        <label>Phone number<input id="profile-phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="07XX XXX XXX"></label>
+        <label>Delivery location<input id="profile-address" name="address" autocomplete="street-address" placeholder="Hostel, block, room or campus gate"></label>
+        <button type="submit">Save my details</button><p id="profile-message" class="notice" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panel" id="admin-panel">
+      <div class="panel-head">
+        <h2>Edit product prices</h2>
+        <span class="pill">Admin</span>
+      </div>
+      <p class="notice">Change any price below, then select “Save all prices”. Your changes are saved in this browser on this device.</p>
+      <input class="search" id="admin-search" type="search" placeholder="Find a product to edit..." aria-label="Find a product price">
+      <div class="admin-grid" id="admin-grid"></div>
+      <div class="admin-tools">
+        <button id="save-prices" type="button">Save all prices</button>
+        <button id="reset-prices" class="secondary" type="button">Reset suggested prices</button>
+        <button id="back-to-products" class="secondary" type="button">Back to Products</button>
+      </div>
+      <p id="admin-message" class="notice" role="status"></p>
+    </section>
+
+    <div class="panel-head">
+      <h2 class="section-title">All products</h2>
+      <button id="toggle-admin" class="secondary" type="button">⚙️ Manage prices</button>
+    </div>
+    <p id="result-count" class="notice"></p>
+   
+<section class="products" id="products"></section>
+
+<section class="how-to-order" id="how-to-order">
+  <h2>How to Order on DukaPlug</h2>
+  <p class="section-description">
+    Get your food and everyday essentials delivered in a few simple steps.
+  </p>
+
+  <div class="order-steps">
+    <div class="order-step">
+      <span>1</span>
+      <h3>Browse Products</h3>
+      <p>Explore fast food and everyday essentials, then add your favourite items to your cart.</p>
+    </div>
+
+    <div class="order-step">
+      <span>2</span>
+      <h3>Set Up Your Profile</h3>
+      <p>Open My Profile and enter your name, phone number and delivery location.</p>
+    </div>
+
+    <div class="order-step">
+      <span>3</span>
+      <h3>Review Your Cart</h3>
+      <p>Check your selected items, quantities, delivery fee and total amount.</p>
+    </div>
+
+    <div class="order-step">
+      <span>4</span>
+      <h3>Choose How to Pay</h3>
+      <p>Select M-Pesa or Cash on Delivery at checkout and follow the instructions shown.</p>
+    </div>
+
+    <div class="order-step">
+      <span>5</span>
+      <h3>Confirm Your Order</h3>
+      <p>Confirm your details and submit your order.</p>
+    </div>
+
+    <div class="order-step">
+      <span>6</span>
+      <h3>Track Your Order</h3>
+      <p>Visit My Orders to check your order information and status when available.</p>
+    </div>
+  </div>
+</section>
+
+    <section class="store-trust" aria-label="Shopping information">
+      <div class="trust-item"><span>🛒</span><strong>One simple cart</strong><p>Food and everyday essentials in one catalogue.</p></div>
+      <div class="trust-item"><span>💚</span><strong>Clear prices</strong><p>See the suggested price before adding an item.</p></div>
+      <div class="trust-item"><span>📱</span><strong>Made for campus</strong><p>Keep your delivery location easy to find.</p></div>
+    </section>
+    <p class="notice">Suggested prices are for illustration and should be checked against your supplier and campus market.</p>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="active" type="button" data-nav="home"><span>⌂</span>Home</button>
+    <button type="button" data-nav="profile"><span>▦</span>profile</button>
+    <button type="button" data-nav="orders"><span>🛒</span>orders</button>
+    <button type="button" data-nav="cart"><span>▤</span>Cart</button>
+    <button type="button" data-nav="browse"><span>♙</span>browse</button>
+  </nav>
+
+  <footer><p>© 2026 DukaPlug. Food and essentials, made easier.<br><small>.</small></p></footer>
+
+  <script>
+    const originalProducts = [
+  {
+    "id": 1,
+    "name": "Beef",
+    "category": "Fast Food",
+    "emoji": "🍔",
+    "price": 250
+  },
+  {
+    "id": 2,
+    "name": "Chicken",
+    "category": "Fast Food",
+    "emoji": "🍔",
+    "price": 200
+  },
+  {
+    "id": 3,
+    "name": "Chips",
+    "category": "Fast Food",
+    "emoji": "🍟",
+    "price": 100
+  },
+  {
+    "id": 4,
+    "name": "Masala Chips",
+    "category": "Fast Food",
+    "emoji": "🍟",
+    "price": 200
+  },
+  {
+    "id": 5,
+    "name": "Smokie beef",
+    "category": "Fast Food",
+    "emoji": "🌭",
+    "price": 40
+  },
+  {
+    "id": 6,
+    "name": "smokie chicken",
+    "category": "Fast Food",
+    "emoji": "🌭",
+    "price": 30
+  },
+  {
+    "id": 7,
+    "name": "Samosa",
+    "category": "Fast Food",
+    "emoji": "🥟",
+    "price": 50
+  },
+  {
+    "id": 8,
+    "name": "Bhajia",
+    "category": "Fast Food",
+    "emoji": "🥔",
+    "price": 150
+  },
+  {
+    "id": 9,
+    "name": "Chicken Wings",
+    "category": "Fast Food",
+    "emoji": "🍗",
+    "price": 300
+  },
+  {
+    "id": 10,
+    "name": "Fried Chicken",
+    "category": "Fast Food",
+    "emoji": "🍗",
+    "price": 250
+  },
+  {
+    "id": 11,
+    "name": "Hot Dog",
+    "category": "Fast Food",
+    "emoji": "🌭",
+    "price": 180
+  },
+  {
+    "id": 12,
+    "name": "Chicken Nuggets",
+    "category": "Fast Food",
+    "emoji": "🍗",
+    "price": 220
+  },
+  {
+    "id": 13,
+    "name": "Smocha",
+    "category": "Fast Food",
+    "emoji": "🌯",
+    "price": 100
+  },
+  {
+    "id": 14,
+    "name": "cupcakes",
+    "category": "Fast Food",
+    "emoji": "🍕",
+    "price": 200
+  },
+  {
+    "id": 15,
+    "name": "Spring Rolls",
+    "category": "Fast Food",
+    "emoji": "🥟",
+    "price": 80
+  },
+  {
+    "id": 16,
+    "name": "Chapati and Beans",
+    "category": "Lunch & Meals",
+    "emoji": "🍛",
+    "price": 150
+  },
+  {
+    "id": 17,
+    "name": "Rice and Beans",
+    "category": "Lunch & Meals",
+    "emoji": "🍛",
+    "price": 150
+  },
+  {
+    "id": 18,
+    "name": "Rice and Beef Stew",
+    "category": "Lunch & Meals",
+    "emoji": "🍲",
+    "price": 250
+  },
+  {
+    "id": 19,
+    "name": "Rice and Chicken",
+    "category": "Lunch & Meals",
+    "emoji": "🍗",
+    "price": 300
+  },
+  {
+    "id": 20,
+    "name": "Pilau",
+    "category": "Lunch & Meals",
+    "emoji": "🍚",
+    "price": 200
+  },
+  {
+    "id": 21,
+    "name": "Ugali and Sukuma Wiki",
+    "category": "Lunch & Meals",
+    "emoji": "🥬",
+    "price": 100
+  },
+  {
+    "id": 22,
+    "name": "Ugali and Beef",
+    "category": "Lunch & Meals",
+    "emoji": "🍲",
+    "price": 220
+  },
+  {
+    "id": 23,
+    "name": "Githeri",
+    "category": "Lunch & Meals",
+    "emoji": "🥣",
+    "price": 120
+  },
+  {
+    "id": 24,
+    "name": "Mukimo and Beef Stew",
+    "category": "Lunch & Meals",
+    "emoji": "🍲",
+    "price": 250
+  },
+  {
+    "id": 25,
+    "name": "Chapati and Ndengu",
+    "category": "Lunch & Meals",
+    "emoji": "🍛",
+    "price": 150
+  },
+  {
+    "id": 26,
+    "name": "Chips and smokie",
+    "category": "Lunch & Meals",
+    "emoji": "🍟",
+    "price": 180
+  },
+  {
+    "id": 27,
+    "name": "fried rice and egg curry",
+    "category": "Lunch & Meals",
+    "emoji": "🍗",
+    "price": 350
+  },
+  {
+    "id": 28,
+    "name": "Spaghetti and Minced Meat",
+    "category": "Lunch & Meals",
+    "emoji": "🍝",
+    "price": 250
+  },
+  {
+    "id": 29,
+    "name": "fried rice and Stew",
+    "category": "Lunch & Meals",
+    "emoji": "🍲",
+    "price": 250
+  },
+  {
+    "id": 30,
+    "name": "Vegetable Fried Rice",
+    "category": "Lunch & Meals",
+    "emoji": "🍚",
+    "price": 180
+  },
+  {
+    "id": 31,
+    "name": "Coke",
+    "category": "Drinks",
+    "emoji": "🥤",
+    "price": 150
+  },
+  {
+    "id": 32,
+    "name": "Fanta Orange",
+    "category": "Drinks",
+    "emoji": "🥤",
+    "price": 150
+  },
+  {
+    "id": 33,
+    "name": "Sprite",
+    "category": "Drinks",
+    "emoji": "🥤",
+    "price": 150
+  },
+  {
+    "id": 34,
+    "name": "minute maid",
+    "category": "Drinks",
+    "emoji": "🥤",
+    "price": 190
+  },
+  {
+    "id": 35,
+    "name": "Pepsi",
+    "category": "Drinks",
+    "emoji": "🥤",
+    "price": 70
+  },
+  {
+    "id": 36,
+    "name": "Mountain Dew",
+    "category": "Drinks",
+    "emoji": "🥤",
+    "price": 70
+  },
+  {
+    "id": 37,
+    "name": "Minute Maid Juice",
+    "category": "Drinks",
+    "emoji": "🧃",
+    "price": 100
+  },
+  {
+    "id": 38,
+    "name": "Del Monte Juice",
+    "category": "Drinks",
+    "emoji": "🧃",
+    "price": 350
+  },
+  {
+    "id": 39,
+    "name": "Afia Juice",
+    "category": "Drinks",
+    "emoji": "🧃",
+    "price": 190
+  },
+  {
+    "id": 40,
+    "name": "Mala",
+    "category": "Drinks",
+    "emoji": "🥛",
+    "price": 80
+  },
+  {
+    "id": 41,
+    "name": "Bottled Water",
+    "category": "Drinks",
+    "emoji": "💧",
+    "price": 50
+  },
+  {
+    "id": 42,
+    "name": "Flavoured Water",
+    "category": "Drinks",
+    "emoji": "💧",
+    "price": 100
+  },
+  {
+    "id": 43,
+    "name": "Energy Drink",
+    "category": "Drinks",
+    "emoji": "⚡",
+    "price": 150
+  },
+  {
+    "id": 44,
+    "name": "Iced Tea",
+    "category": "Drinks",
+    "emoji": "🧋",
+    "price": 120
+  },
+  {
+    "id": 45,
+    "name": "Fresh Passion Juice",
+    "category": "Drinks",
+    "emoji": "🧃",
+    "price": 100
+  },
+  {
+    "id": 46,
+    "name": "Bathing Soap",
+    "category": "Toiletries",
+    "emoji": "🧼",
+    "price": 200
+  },
+  {
+    "id": 47,
+    "name": "Toothpaste",
+    "category": "Toiletries",
+    "emoji": "🪥",
+    "price": 200
+  },
+  {
+    "id": 48,
+    "name": "Toothbrush",
+    "category": "Toiletries",
+    "emoji": "🪥",
+    "price": 80
+  },
+  {
+    "id": 49,
+    "name": "Toilet Paper",
+    "category": "Toiletries",
+    "emoji": "🧻",
+    "price": 100
+  },
+  {
+    "id": 50,
+    "name": "cotton buds",
+    "category": "Toiletries",
+    "emoji": "🩷",
+    "price": 50
+  },
+  {
+    "id": 51,
+    "name": "Panty Liners",
+    "category": "Toiletries",
+    "emoji": "🩷",
+    "price": 100
+  },
+  {
+    "id": 52,
+    "name": "Shampoo",
+    "category": "Toiletries",
+    "emoji": "🧴",
+    "price": 180
+  },
+  {
+    "id": 53,
+    "name": "Hair Conditioner",
+    "category": "Toiletries",
+    "emoji": "🧴",
+    "price": 200
+  },
+  {
+    "id": 54,
+    "name": "Body Lotion",
+    "category": "Toiletries",
+    "emoji": "🧴",
+    "price": 300
+  },
+  {
+    "id": 55,
+    "name": "Petroleum Jelly",
+    "category": "Toiletries",
+    "emoji": "🧴",
+    "price": 100
+  },
+  {
+    "id": 56,
+    "name": "Roll-on Deodorant",
+    "category": "Toiletries",
+    "emoji": "🧴",
+    "price": 200
+  },
+  {
+    "id": 57,
+    "name": "Handwash",
+    "category": "Toiletries",
+    "emoji": "🧼",
+    "price": 150
+  },
+  {
+    "id": 58,
+    "name": "Laundry Detergent",
+    "category": "Toiletries",
+    "emoji": "🫧",
+    "price": 350
+  },
+  {
+    "id": 59,
+    "name": "Dishwashing Liquid",
+    "category": "Toiletries",
+    "emoji": "🧴",
+    "price": 150
+  },
+  {
+    "id": 60,
+    "name": "Wet Wipes",
+    "category": "Toiletries",
+    "emoji": "🧻",
+    "price": 200
+  },
+  {
+    "id": 61,
+    "name": "Bananas (bunch)",
+    "category": "Fruits",
+    "emoji": "🍌",
+    "price": 100
+  },
+  {
+    "id": 62,
+    "name": "Mango",
+    "category": "Fruits",
+    "emoji": "🥭",
+    "price": 50
+  },
+  {
+    "id": 63,
+    "name": "Oranges (2)",
+    "category": "Fruits",
+    "emoji": "🍊",
+    "price": 100
+  },
+  {
+    "id": 64,
+    "name": "Apple",
+    "category": "Fruits",
+    "emoji": "🍎",
+    "price": 200
+  },
+  {
+    "id": 65,
+    "name": "Watermelon Slices",
+    "category": "Fruits",
+    "emoji": "🍉",
+    "price": 100
+  },
+  {
+    "id": 66,
+    "name": "Pineapple Slices",
+    "category": "Fruits",
+    "emoji": "🍍",
+    "price": 100
+  },
+  {
+    "id": 67,
+    "name": "Avocado",
+    "category": "Fruits",
+    "emoji": "🥑",
+    "price": 50
+  },
+  {
+    "id": 68,
+    "name": "Pawpaw Portion",
+    "category": "Fruits",
+    "emoji": "🍈",
+    "price": 80
+  },
+  {
+    "id": 69,
+    "name": "Passion Fruits (3)",
+    "category": "Fruits",
+    "emoji": "🟣",
+    "price": 50
+  },
+  {
+    "id": 70,
+    "name": "Grapes (small pack)",
+    "category": "Fruits",
+    "emoji": "🍇",
+    "price": 180
+  },
+  {
+    "id": 71,
+    "name": "Pear",
+    "category": "Fruits",
+    "emoji": "🍐",
+    "price": 70
+  },
+  {
+    "id": 72,
+    "name": "Lemon (2)",
+    "category": "Fruits",
+    "emoji": "🍋",
+    "price": 40
+  },
+  {
+    "id": 73,
+    "name": "Strawberries (small pack)",
+    "category": "Fruits",
+    "emoji": "🍓",
+    "price": 400
+  },
+  {
+    "id": 74,
+    "name": "Melon Portion",
+    "category": "Fruits",
+    "emoji": "🍈",
+    "price": 100
+  },
+  {
+    "id": 75,
+    "name": "Mixed Fruit Cup",
+    "category": "Fruits",
+    "emoji": "🍍",
+    "price": 150
+  },
+  {
+    "id": 76,
+    "name": "Vanilla Ice Cream Cup",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍦",
+    "price": 300
+  },
+  {
+    "id": 77,
+    "name": "Chocolate Ice Cream Cup",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍨",
+    "price": 300
+  },
+  {
+    "id": 78,
+    "name": "Strawberry Ice Cream Cup",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍨",
+    "price": 300
+  },
+  {
+    "id": 79,
+    "name": "Ice Cream Cone",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍦",
+    "price": 300
+  },
+  {
+    "id": 80,
+    "name": "Ice Cream Tub (small)",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍨",
+    "price": 250
+  },
+  {
+    "id": 81,
+    "name": "Ice Lolly",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍭",
+    "price": 35
+  },
+  {
+    "id": 82,
+    "name": "fiesta",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍡",
+    "price": 70
+  },
+  {
+    "id": 83,
+    "name": "Chocolate Ice Cream Bar",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍫",
+    "price": 300
+  },
+  {
+    "id": 84,
+    "name": "Frozen Yoghurt",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🥣",
+    "price": 150
+  },
+  {
+    "id": 85,
+    "name": "Ice Cream Tub (large)",
+    "category": "Ice Cream & Frozen",
+    "emoji": "🍨",
+    "price": 500
+  },
+  {
+    "id": 86,
+    "name": "Fresh Milk 500ml",
+    "category": "Milk & Dairy",
+    "emoji": "🥛",
+    "price": 80
+  },
+  {
+    "id": 87,
+    "name": "Long-Life Milk 500ml",
+    "category": "Milk & Dairy",
+    "emoji": "🥛",
+    "price": 80
+  },
+  {
+    "id": 88,
+    "name": "Mala 500ml",
+    "category": "Milk & Dairy",
+    "emoji": "🥛",
+    "price": 80
+  },
+  {
+    "id": 89,
+    "name": "Plain Yoghurt",
+    "category": "Milk & Dairy",
+    "emoji": "🥣",
+    "price": 100
+  },
+  {
+    "id": 90,
+    "name": "Strawberry Yoghurt",
+    "category": "Milk & Dairy",
+    "emoji": "🥣",
+    "price": 120
+  },
+  {
+    "id": 91,
+    "name": "Drinking Yoghurt",
+    "category": "Milk & Dairy",
+    "emoji": "🥤",
+    "price": 100
+  },
+  {
+    "id": 92,
+    "name": "Flavoured Milk",
+    "category": "Milk & Dairy",
+    "emoji": "🥛",
+    "price": 100
+  },
+  {
+    "id": 93,
+    "name": "Chocolate Milk",
+    "category": "Milk & Dairy",
+    "emoji": "🥛",
+    "price": 120
+  },
+  {
+    "id": 94,
+    "name": "Cheese Slices (pack)",
+    "category": "Milk & Dairy",
+    "emoji": "🧀",
+    "price": 250
+  },
+  {
+    "id": 95,
+    "name": "Butter (small pack)",
+    "category": "Milk & Dairy",
+    "emoji": "🧈",
+    "price": 180
+  },
+  {
+    "id": 96,
+    "name": "Digestive Biscuits",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍪",
+    "price": 250
+  },
+  {
+    "id": 97,
+    "name": "Marie Biscuits",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍪",
+    "price": 250
+  },
+  {
+    "id": 98,
+    "name": "Cream Biscuits",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍪",
+    "price": 250
+  },
+  {
+    "id": 99,
+    "name": "Chocolate Chip Cookies",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍪",
+    "price": 120
+  },
+  {
+    "id": 100,
+    "name": "Doughnut",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍩",
+    "price": 80
+  },
+  {
+    "id": 101,
+    "name": "Mandazi",
+    "category": "Biscuits & Snacks",
+    "emoji": "🥯",
+    "price": 30
+  },
+  {
+    "id": 102,
+    "name": "Popcorn",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍿",
+    "price": 80
+  },
+  {
+    "id": 103,
+    "name": "Potato Crisps",
+    "category": "Biscuits & Snacks",
+    "emoji": "🥔",
+    "price": 70
+  },
+  {
+    "id": 104,
+    "name": "Chewing Gum",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍬",
+    "price": 30
+  },
+  {
+    "id": 105,
+    "name": "Lollipop",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍭",
+    "price": 20
+  },
+  {
+    "id": 106,
+    "name": "Chocolate Bar",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍫",
+    "price": 100
+  },
+  {
+    "id": 107,
+    "name": "Sweets (small pack)",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍬",
+    "price": 30
+  },
+  {
+    "id": 108,
+    "name": "Roasted Groundnuts",
+    "category": "Biscuits & Snacks",
+    "emoji": "🥜",
+    "price": 50
+  },
+  {
+    "id": 109,
+    "name": "Cashew Nuts (small pack)",
+    "category": "Biscuits & Snacks",
+    "emoji": "🥜",
+    "price": 180
+  },
+  {
+    "id": 110,
+    "name": "Crackers",
+    "category": "Biscuits & Snacks",
+    "emoji": "🍘",
+    "price": 80
+  },
+  {
+    "id": 111,
+    "name": "Oats (small pack)",
+    "category": "Healthy Foods",
+    "emoji": "🥣",
+    "price": 250
+  },
+  {
+    "id": 112,
+    "name": "Boiled Eggs (2)",
+    "category": "Healthy Foods",
+    "emoji": "🥚",
+    "price": 40
+  },
+  {
+    "id": 113,
+    "name": "Fruit Salad",
+    "category": "Healthy Foods",
+    "emoji": "🥗",
+    "price": 150
+  },
+  {
+    "id": 114,
+    "name": "Vegetable Salad",
+    "category": "Healthy Foods",
+    "emoji": "🥗",
+    "price": 100
+  },
+  {
+    "id": 115,
+    "name": "Greek Yoghurt",
+    "category": "Healthy Foods",
+    "emoji": "🥣",
+    "price": 180
+  },
+  {
+    "id": 116,
+    "name": "Granola (small pack)",
+    "category": "Healthy Foods",
+    "emoji": "🥣",
+    "price": 180
+  },
+  {
+    "id": 117,
+    "name": "Muesli (small pack)",
+    "category": "Healthy Foods",
+    "emoji": "🥣",
+    "price": 180
+  },
+  {
+    "id": 118,
+    "name": "Peanut Butter (small jar)",
+    "category": "Healthy Foods",
+    "emoji": "🥜",
+    "price": 250
+  },
+  {
+    "id": 119,
+    "name": "Wholemeal Bread",
+    "category": "Healthy Foods",
+    "emoji": "🍞",
+    "price": 100
+  },
+  {
+    "id": 120,
+    "name": "Roasted Maize",
+    "category": "Healthy Foods",
+    "emoji": "🌽",
+    "price": 50
+  },
+  {
+    "id": 121,
+    "name": "Boiled Maize",
+    "category": "Healthy Foods",
+    "emoji": "🌽",
+    "price": 50
+  },
+  {
+    "id": 122,
+    "name": "Sweet Potatoes",
+    "category": "Healthy Foods",
+    "emoji": "🍠",
+    "price": 80
+  },
+  {
+    "id": 123,
+    "name": "Boiled Arrowroots",
+    "category": "Healthy Foods",
+    "emoji": "🍠",
+    "price": 100
+  },
+  {
+    "id": 124,
+    "name": "Roasted Chickpeas",
+    "category": "Healthy Foods",
+    "emoji": "🫘",
+    "price": 80
+  },
+  {
+    "id": 125,
+    "name": "Mixed Nuts & Seeds",
+    "category": "Healthy Foods",
+    "emoji": "🥜",
+    "price": 200
+  },
+  {
+    "id": 126,
+    "name": "Sliced Bread",
+    "category": "Bakery",
+    "emoji": "🍞",
+    "price": 70
+  },
+  {
+    "id": 127,
+    "name": "White Bread Rolls",
+    "category": "Bakery",
+    "emoji": "🥖",
+    "price": 30
+  },
+  {
+    "id": 128,
+    "name": "Brown Bread",
+    "category": "Bakery",
+    "emoji": "🍞",
+    "price": 90
+  },
+  {
+    "id": 129,
+    "name": "Croissant",
+    "category": "Bakery",
+    "emoji": "🥐",
+    "price": 120
+  },
+  {
+    "id": 130,
+    "name": "Muffin",
+    "category": "Bakery",
+    "emoji": "🧁",
+    "price": 100
+  },
+  {
+    "id": 131,
+    "name": "Cupcake",
+    "category": "Bakery",
+    "emoji": "🧁",
+    "price": 80
+  },
+  {
+    "id": 132,
+    "name": "Cinnamon Roll",
+    "category": "Bakery",
+    "emoji": "🥐",
+    "price": 120
+  },
+  {
+    "id": 133,
+    "name": "Banana Bread Slice",
+    "category": "Bakery",
+    "emoji": "🍞",
+    "price": 100
+  },
+  {
+    "id": 134,
+    "name": "Scone",
+    "category": "Bakery",
+    "emoji": "🥯",
+    "price": 50
+  },
+  {
+    "id": 135,
+    "name": "Meat Pie",
+    "category": "Bakery",
+    "emoji": "🥧",
+    "price": 120
+  },
+  {
+    "id": 136,
+    "name": "Sausage Roll",
+    "category": "Bakery",
+    "emoji": "🌭",
+    "price": 100
+  },
+  {
+    "id": 137,
+    "name": "Garlic Bread",
+    "category": "Bakery",
+    "emoji": "🥖",
+    "price": 150
+  },
+  {
+    "id": 138,
+    "name": "Tea Cake Slice",
+    "category": "Bakery",
+    "emoji": "🍰",
+    "price": 80
+  },
+  {
+    "id": 139,
+    "name": "Pancakes (2)",
+    "category": "Bakery",
+    "emoji": "🥞",
+    "price": 100
+  },
+  {
+    "id": 140,
+    "name": "Waffles",
+    "category": "Bakery",
+    "emoji": "🧇",
+    "price": 180
+  },
+  {
+    "id": 141,
+    "name": "Instant Noodles",
+    "category": "Everyday Essentials",
+    "emoji": "🍜",
+    "price": 50
+  },
+  {
+    "id": 142,
+    "name": "Tea Bags (pack)",
+    "category": "Everyday Essentials",
+    "emoji": "🫖",
+    "price": 200
+  },
+  {
+    "id": 143,
+    "name": "Instant Coffee Sachet",
+    "category": "Everyday Essentials",
+    "emoji": "☕",
+    "price": 20
+  },
+  {
+    "id": 144,
+    "name": "Sugar (500g)",
+    "category": "Everyday Essentials",
+    "emoji": "🧂",
+    "price": 100
+  },
+  {
+    "id": 145,
+    "name": "Cooking Oil (500ml)",
+    "category": "Everyday Essentials",
+    "emoji": "🫗",
+    "price": 180
+  },
+  {
+    "id": 146,
+    "name": "Rice (1kg)",
+    "category": "Everyday Essentials",
+    "emoji": "🍚",
+    "price": 180
+  },
+  {
+    "id": 147,
+    "name": "Eggs (tray of 6)",
+    "category": "Everyday Essentials",
+    "emoji": "🥚",
+    "price": 120
+  },
+  {
+    "id": 148,
+    "name": "Drinking Yoghurt",
+    "category": "Everyday Essentials",
+    "emoji": "🥤",
+    "price": 100
+  },
+  {
+    "id": 149,
+    "name": "Exercise Book",
+    "category": "Everyday Essentials",
+    "emoji": "📓",
+    "price": 80
+  },
+  {
+    "id": 150,
+    "name": "Pen",
+    "category": "Everyday Essentials",
+    "emoji": "🖊️",
+    "price": 30
+  }
+];
+    let products = originalProducts.map(product => ({ ...product }));
+    let cart = {};
+    let activeCategory = "All";
+    const money = amount => "KSh " + Number(amount).toLocaleString("en-KE", { maximumFractionDigits: 2 });
+
+    // Load locally saved prices, if there are any.
+    try {
+      const savedPrices = JSON.parse(localStorage.getItem("dukaplugPrices") || "{}");
+      products = products.map(product => ({
+        ...product,
+        price: Number.isFinite(Number(savedPrices[product.id])) && savedPrices[product.id] !== undefined
+          ? Number(savedPrices[product.id]) : product.price
+      }));
+    } catch (error) {
+      console.warn("Saved DukaPlug prices could not be loaded.", error);
+    }
+
+    const categories = ["All", ...new Set(products.map(product => product.category))];
+
+    function renderCategories() {
+      const container = document.getElementById("categories");
+      container.innerHTML = "";
+      categories.forEach(category => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "category" + (activeCategory === category ? " active" : "");
+        button.textContent = category === "All" ? "🛍️ All products" : category;
+        button.addEventListener("click", () => {
+          activeCategory = category;
+          renderCategories();
+          renderProducts();
+        });
+        container.appendChild(button);
+      });
+    }
+
+    function getFilteredProducts(searchText = document.getElementById("search").value) {
+      const query = searchText.toLowerCase().trim();
+      return products.filter(product => {
+        const matchesSearch = (product.name + " " + product.category).toLowerCase().includes(query);
+        const matchesCategory = activeCategory === "All" || product.category === activeCategory;
+        return matchesSearch && matchesCategory;
+      });
+    }
+
+    
+function getProductImage(product) {
+  const category = (product.category || "").toLowerCase();
+  const name = (product.name || "").toLowerCase();
+
+  // Fried rice
+  if (name.includes("fried rice")) {
+    return "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Smokie
+  if (name.includes("smokie")) {
+    return "https://images.unsplash.com/photo-1612392062798-2dbaa8f0a5c5?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Smocha
+  if (name.includes("smocha")) {
+    return "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Pizza
+  if (name.includes("pizza")) {
+    return "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Fried chicken
+  if (name.includes("chicken")) {
+    return "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Chips and fries
+  if (name.includes("chips") || name.includes("fries")) {
+    return "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Burgers
+  if (name.includes("burger")) {
+    return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Fruits
+  if (
+    category.includes("fruit") ||
+    name.includes("avocado") ||
+    name.includes("banana") ||
+    name.includes("apple")
+  ) {
+    return "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Other meals
+  if (category.includes("lunch") || category.includes("meal")) {
+    return "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Drinks and dairy
+  if (
+    category.includes("drink") ||
+    category.includes("dairy") ||
+    name.includes("milk") ||
+    name.includes("yoghurt") ||
+    name.includes("mala") ||
+    name.includes("juice") ||
+    name.includes("water")
+  ) {
+    return "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Bread and snacks
+  if (
+    category.includes("bakery") ||
+    category.includes("biscuit") ||
+    category.includes("snack") ||
+    name.includes("bread")
+  ) {
+    return "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Ice cream
+  if (category.includes("ice cream") || category.includes("frozen")) {
+    return "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Toiletries and personal care
+  if (
+    category.includes("toiletr") ||
+    name.includes("soap") ||
+    name.includes("shampoo") ||
+    name.includes("lotion")
+  ) {
+    return "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=80";
+  }
+
+  // Default image
+  return "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=700&q=80";
+}
+
+
+    function renderProducts() {
+      const container = document.getElementById("products");
+      const filtered = getFilteredProducts();
+      container.innerHTML = "";
+      document.getElementById("result-count").textContent = `Showing ${filtered.length} of ${products.length} products`;
+      filtered.forEach(product => {
+        const article = document.createElement("article");
+        article.className = "product";
+        article.innerHTML = `
+          <div class="product-image"><img src="${getProductImage(product)}" alt="${product.name}" loading="lazy" onerror="this.style.display='none'; this.parentElement.textContent='${product.emoji}'"></div>
+          <h3></h3>
+          <p></p>
+          <div class="price"></div>
+          <button type="button">Add to Cart</button>`;
+        article.querySelector("h3").textContent = product.name;
+        article.querySelector("p").textContent = product.category;
+        article.querySelector(".price").textContent = money(product.price);
+        article.querySelector("button").addEventListener("click", () => addToCart(product.id));
+        container.appendChild(article);
+      });
+      if (!filtered.length) container.innerHTML = '<p class="empty">No products found. Try another search.</p>';
+    }
+
+    function addToCart(productId) {
+      cart[productId] = (cart[productId] || 0) + 1;
+      renderCart();
+      const panel = document.getElementById("cart-panel");
+      panel.classList.add("open");
+      document.getElementById("checkout-message").textContent = "";
+    }
+
+    function changeQuantity(productId, change) {
+      cart[productId] = (cart[productId] || 0) + change;
+      if (cart[productId] <= 0) delete cart[productId];
+      renderCart();
+    }
+
+    function removeFromCart(productId) {
+      delete cart[productId];
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById("cart-items");
+      container.innerHTML = "";
+      let count = 0;
+      let subtotal = 0;
+      const cartEntries = Object.entries(cart);
+      if (!cartEntries.length) {
+        container.innerHTML = '<p class="empty">Your cart is empty. Add something delicious or useful!</p>';
+      }
+      cartEntries.forEach(([id, quantity]) => {
+        const product = products.find(item => item.id === Number(id));
+        if (!product) return;
+        count += quantity;
+        subtotal += product.price * quantity;
+        const line = document.createElement("div");
+        line.className = "cart-line";
+        const info = document.createElement("div");
+        info.innerHTML = `<strong></strong><small></small>`;
+        info.querySelector("strong").textContent = product.emoji + " " + product.name;
+        info.querySelector("small").textContent = `${money(product.price)} each`;
+        const controls = document.createElement("div");
+        controls.className = "quantity-controls";
+        const minus = document.createElement("button");
+        minus.type = "button"; minus.className = "secondary"; minus.textContent = "−";
+        minus.setAttribute("aria-label", "Decrease quantity");
+        minus.addEventListener("click", () => changeQuantity(product.id, -1));
+        const qty = document.createElement("span"); qty.textContent = quantity;
+        const plus = document.createElement("button");
+        plus.type = "button"; plus.textContent = "+";
+        plus.setAttribute("aria-label", "Increase quantity");
+        plus.addEventListener("click", () => changeQuantity(product.id, 1));
+        controls.append(minus, qty, plus);
+        const remove = document.createElement("button");
+        remove.type = "button"; remove.className = "remove-button"; remove.textContent = "Remove";
+        remove.addEventListener("click", () => removeFromCart(product.id));
+        const linePrice = document.createElement("div");
+        linePrice.className = "line-price";
+        linePrice.textContent = money(product.price * quantity);
+        line.append(info, controls, linePrice, remove);
+        container.appendChild(line);
+      });
+      document.getElementById("cart-count").textContent = count;
+      document.getElementById("cart-total").textContent = "Subtotal: " + money(subtotal);
+    }
+
+    function renderAdmin() {
+      const container = document.getElementById("admin-grid");
+      const query = document.getElementById("admin-search").value.toLowerCase().trim();
+      container.innerHTML = "";
+      products.filter(product => (product.name + " " + product.category).toLowerCase().includes(query)).forEach(product => {
+        const row = document.createElement("div");
+        row.className = "admin-row";
+        const label = document.createElement("label");
+        label.htmlFor = "price-" + product.id;
+        label.textContent = product.emoji + " " + product.name;
+        const input = document.createElement("input");
+        input.type = "number";
+        input.id = "price-" + product.id;
+        input.min = "0";
+        input.step = "1";
+        input.value = product.price;
+        input.dataset.productId = product.id;
+        input.setAttribute("aria-label", "Price for " + product.name);
+        row.append(label, input);
+        container.appendChild(row);
+      });
+    }
+let adminToken = null;
+ 
+async function savePrices() {
+  const inputs = document.querySelectorAll("#admin-grid input");
+  const updates = {};
+
+  for (const input of inputs) {
+    const price = Number(input.value);
+
+    if (
+      input.value.trim() === "" ||
+      !Number.isFinite(price) ||
+      price < 0 ||
+      price > 1000000
+    ) {
+      document.getElementById("admin-message").textContent =
+        "Enter a valid price between KSh 0 and KSh 1,000,000.";
+      input.focus();
+      return;
+    }
+
+    updates[input.dataset.productId] = price;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    document.getElementById("admin-message").textContent =
+      "No product prices to save.";
+    return;
+  }
+
+  try {
+    if (!adminToken) {
+      const password = prompt("Enter your DukaPlug admin password:");
+
+      if (password === null || password.length === 0) {
+        document.getElementById("admin-message").textContent =
+          "Admin login cancelled.";
+        return;
+      }
+
+      const loginResponse = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (!loginResponse.ok) {
+        document.getElementById("admin-message").textContent =
+          loginData.error || "Admin login failed.";
+        return;
+      }
+
+      adminToken = loginData.token;
+    }
+
+    const response = await fetch("/api/admin/prices", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ prices: updates })
+    });
+
+    const result = await response.json();
+
+    if (response.status === 401) {
+      adminToken = null;
+    }
+
+    if (!response.ok) {
+      document.getElementById("admin-message").textContent =
+        result.error || "Could not save prices.";
+      return;
+    }
+
+    products = products.map(product =>
+      updates[product.id] === undefined
+        ? product
+        : { ...product, price: updates[product.id] }
+    );
+
+    document.getElementById("admin-message").textContent =
+      "Prices saved to the server successfully.";
+
+    renderProducts();
+    renderCart();
+    renderAdmin();
+  } catch (error) {
+    console.error("Price saving error:", error);
+    document.getElementById("admin-message").textContent =
+      "Could not connect to the server. Check that DukaPlug is running.";
+  }
+}
+   
+
+    function resetPrices() {
+      products = originalProducts.map(product => ({ ...product }));
+      try { localStorage.removeItem("dukaplugPrices"); } catch (error) {}
+      renderProducts();
+      renderCart();
+      renderAdmin();
+      document.getElementById("admin-message").textContent = "Suggested starting prices restored.";
+    }
+
+    document.getElementById("search").addEventListener("input", renderProducts);
+    document.getElementById("admin-search").addEventListener("input", renderAdmin);
+    document.getElementById("toggle-admin").addEventListener("click", () => {
+      document.getElementById("admin-panel").classList.toggle("open");
+      renderAdmin();
+      document.getElementById("admin-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("save-prices").addEventListener("click", savePrices);
+    document.getElementById("reset-prices").addEventListener("click", resetPrices);
+    document.getElementById("toggle-cart").addEventListener("click", () => {
+      document.getElementById("cart-panel").classList.toggle("open");
+      document.getElementById("cart-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+   
+document.getElementById("close-cart").addEventListener("click", () => {
+  document.getElementById("cart-panel").classList.remove("open");
+});
+
+function openPanel(panelId) {
+  document.querySelectorAll(".panel").forEach(panel => {
+    panel.classList.remove("open");
+  });
+
+  const panel = document.getElementById(panelId);
+  if (panel) {
+    panel.classList.add("open");
+  }
+}
+
+
+document.getElementById("checkout").addEventListener("click", () => {
+  const checkout = document.getElementById("checkout-options");
+  const message = document.getElementById("checkout-message");
+
+  if (!Object.keys(cart).length) {
+    message.textContent = "Please add products to your cart first.";
+    checkout.style.display = "none";
+    return;
+  }
+
+  message.textContent = "";
+  checkout.style.display = "block";
+});
+
+document.querySelectorAll('input[name="payment-method"]').forEach(input => {
+  input.addEventListener("change", () => {
+    document.getElementById("mpesa-instructions").style.display =
+      input.value === "mpesa" && input.checked ? "block" : "none";
+  });
+});
+
+document.getElementById("copy-mpesa-number").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText("0769043200");
+    document.getElementById("payment-message").textContent =
+      "M-Pesa number copied.";
+  } catch (error) {
+    document.getElementById("payment-message").textContent =
+      "Please copy this number manually: 0769043200";
+  }
+});
+
+document.getElementById("confirm-dukaplug-order").addEventListener("click", async () => {
+  const message = document.getElementById("payment-message");
+  const paymentMethod = document.querySelector(
+    'input[name="payment-method"]:checked'
+  )?.value;
+
+  const customer = {
+    name: document.getElementById("profile-name").value.trim(),
+    phone: document.getElementById("profile-phone").value.trim(),
+    deliveryAddress: document.getElementById("profile-address").value.trim()
+  };
+
+  if (!customer.name || !customer.phone || !customer.deliveryAddress) {
+    message.textContent =
+      "Please open My Profile and save your name, phone number and delivery location first.";
+    return;
+  }
+
+  if (!Object.keys(cart).length) {
+    message.textContent = "Your cart is empty. Add products first.";
+    return;
+  }
+
+  if (!paymentMethod) {
+    message.textContent = "Please select a payment method.";
+    return;
+  }
+
+  const items = Object.entries(cart).map(([productId, quantity]) => ({
+    productId: Number(productId),
+    quantity: Number(quantity)
+  }));
+
+  const button = document.getElementById("confirm-dukaplug-order");
+  button.disabled = true;
+  message.textContent = "Submitting your order...";
+
+  try {
+    const response = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ customer, items, paymentMethod })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || result.error || "Order submission failed."
+      );
+    }
+
+    message.textContent =
+      "Order placed successfully! Order number: " +
+      (result.orderId || result._id || "confirmed") +
+      ". Customer phone: " + customer.phone +
+      ". Total: KSh " +
+      (result.summary?.total ?? result.total ?? "see order details") +
+      ". " +
+      (paymentMethod === "mpesa"
+        ? "Please send payment to 0769043200."
+        : "Please pay when your order arrives.");
+
+    cart = {};
+    renderCart();
+  } catch (error) {
+    message.textContent =
+      "Could not submit your order. Check that the DukaPlug API is running, then try again. " +
+      error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+    document.querySelectorAll("[data-nav]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-nav]").forEach(item => item.classList.toggle("active", item === button));
+        const destination = button.dataset.nav;
+        if (destination === "home") { window.scrollTo({ top: 0, behavior: "smooth" }); }
+        if (destination === "browse") goToBrowse();
+        if (destination === "cart") openPanel("cart-panel");
+        if (destination === "orders") openPanel("orders-panel");
+        if (destination === "profile") openPanel("profile-panel");
+      });
+    });
+
+    document.getElementById("profile-shortcut").addEventListener("click", () => openPanel("profile-panel"));
+    document.getElementById("close-orders").addEventListener("click", () => document.getElementById("orders-panel").classList.remove("open"));
+    document.getElementById("close-profile").addEventListener("click", () => document.getElementById("profile-panel").classList.remove("open"));
+    document.getElementById("profile-form").addEventListener("submit", event => {
+      event.preventDefault();
+      const profile = { name: document.getElementById("profile-name").value.trim(), phone: document.getElementById("profile-phone").value.trim(), address: document.getElementById("profile-address").value.trim() };
+      try {
+        localStorage.setItem("dukaplugProfile", JSON.stringify(profile));
+        document.getElementById("profile-message").textContent = "Your details are saved on this device.";
+      } catch (error) {
+        document.getElementById("profile-message").textContent = "Details could not be saved in this browser.";
+      }
+    });
+    try {
+      const profile = JSON.parse(localStorage.getItem("dukaplugProfile") || "{}");
+      document.getElementById("profile-name").value = profile.name || "";
+      document.getElementById("profile-phone").value = profile.phone || "";
+      document.getElementById("profile-address").value = profile.address || "";
+    } catch (error) {}
+
+    document.getElementById("back-to-products").addEventListener("click", () => {
+      document.getElementById("admin-panel").classList.remove("open");
+      document.getElementById("products").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    renderCategories();
+    renderProducts();
+    renderCart();
+  </script>
+</body>
+</html>
